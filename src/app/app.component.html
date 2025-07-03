@@ -1,0 +1,80 @@
+<div class="container">
+    <!-- Header/Title Section -->
+    <div class="header">
+        <h1>Astronaut Data Visualization</h1>
+        <p>Interactive world map showing astronaut distribution by country</p>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <!-- Left Sidebar -->
+        <div class="sidebar left-sidebar">
+            <h3>Statistics</h3>
+            <div class="stats-panel">
+                <p>Total Countries: 0</p>
+                <p>Total Astronauts: 0</p>
+                <p>Top Country: -</p>
+            </div>
+
+            <h3>Filters</h3>
+            <div class="filters-panel">
+                <label>
+                    <input type="checkbox" checked> Show all countries
+                </label>
+                <label>
+                    <input type="checkbox" checked> Show astronaut counts
+                </label>
+            </div>
+        </div>
+
+        <!-- Map Container -->
+        <div class="map-container">
+            <app-denmark-map></app-denmark-map>
+        </div>
+
+        <!-- Right Sidebar -->
+        <div class="sidebar right-sidebar">
+            <h3>Country Details</h3>
+            <div class="country-info">
+                <p>Hover over a country to see details</p>
+            </div>
+
+            <h3>Legend</h3>
+            <div class="legend">
+                <div class="legend-item">
+                    <span class="color-box" style="background-color: #800026;"></span>
+                    <span>300+ astronauts</span>
+                </div>
+                <div class="legend-item">
+                    <span class="color-box" style="background-color: #BD0026;"></span>
+                    <span>100-299 astronauts</span>
+                </div>
+                <div class="legend-item">
+                    <span class="color-box" style="background-color: #E31A1C;"></span>
+                    <span>50-99 astronauts</span>
+                </div>
+                <div class="legend-item">
+                    <span class="color-box" style="background-color: #FC4E2A;"></span>
+                    <span>20-49 astronauts</span>
+                </div>
+                <div class="legend-item">
+                    <span class="color-box" style="background-color: #FD8D3C;"></span>
+                    <span>10-19 astronauts</span>
+                </div>
+                <div class="legend-item">
+                    <span class="color-box" style="background-color: #FEB24C;"></span>
+                    <span>1-9 astronauts</span>
+                </div>
+                <div class="legend-item">
+                    <span class="color-box" style="background-color: black;"></span>
+                    <span>0 astronauts</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>Data source: Astronaut database | Click on countries for more information</p>
+    </div>
+</div>
