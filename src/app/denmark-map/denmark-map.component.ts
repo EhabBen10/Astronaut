@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import * as L from 'leaflet';
 import { HttpClient } from '@angular/common/http';
-import { GeoJsonObject } from 'geojson';
 import { AstronautDataService } from '../services/astronaut-data.service';
+import { CountrySelectionService } from '../services/country-selection.service';
+import { LegendFilterService } from '../services/legend-filter.service';
 
 @Component({
   selector: 'app-denmark-map',
@@ -11,22 +12,34 @@ import { AstronautDataService } from '../services/astronaut-data.service';
 })
 export class DenmarkMapComponent implements OnInit {
   private map!: L.Map;
+  selectedCountry: string = '';
   private astronautCounts: { [country: string]: number } = {};
+  private selectedLayer: L.Layer | null = null;
+  private geoJsonLayer!: L.GeoJSON;
 
   constructor(private http: HttpClient,
-    private astronautDataService: AstronautDataService
+    private astronautDataService: AstronautDataService,
+    private countrySelectionService: CountrySelectionService,
+    private legendFilterService: LegendFilterService
   ) { }
 
   ngOnInit(): void {
     this.initMap();
     this.astronautDataService.getAstronautCounts().subscribe({
       next: (counts) => {
-        console.log('Astronaut counts loaded:', counts); // 🔍 Check in browser console
+        console.log('Astronaut counts loaded:', counts);
         this.astronautCounts = counts;
         this.loadGeoJson();
       },
       error: (err) => {
-        console.error('Failed to load astronaut counts:', err); // ❌ See error message
+        console.error('Failed to load astronaut counts:', err);
+      }
+    });
+
+    // Listen for legend filter changes
+    this.legendFilterService.selectedRange$.subscribe(range => {
+      if (this.geoJsonLayer) {
+        this.highlightCountriesByRange(range);
       }
     });
   }
@@ -43,18 +56,6 @@ export class DenmarkMapComponent implements OnInit {
     });
     this.map.setMinZoom(1.49);
 
-    // this.map.on('zoomend', () => {
-    //   const currentZoom = this.map.getZoom();
-    //   const minZoom = this.map.getMinZoom();
-
-    //   if (currentZoom === minZoom) {
-    //     this.map.setView([56, 10], currentZoom);
-    //   }
-    // });
-
-    // if (this.map.getMinZoom() === 7.25) {
-    //   this.map.setView([56, 10], 6);
-    // }
     this.map.setMaxBounds([
       [-60, -180], // southwest corner (limit South Pole)
       [85, 180]    // northeast corner
@@ -80,7 +81,6 @@ export class DenmarkMapComponent implements OnInit {
         onEachFeature: (feature: any, layer: L.Layer) => {
           const name = feature.properties?.name ?? 'Unknown';
           const count = this.astronautCounts[name] || 0;
-          // layer.bindPopup(`<strong>${name}</strong><br/>Astronauts: ${count}`);
           // Hover: Show tooltip (instead of popup)
           layer.on('mouseover', () => {
             layer.bindTooltip(`<strong>${name}</strong><br/>Astronauts: ${count}`, {
@@ -93,10 +93,18 @@ export class DenmarkMapComponent implements OnInit {
           layer.on('mouseout', () => {
             layer.closeTooltip();
           });
-          layer.on('click', () => {
-            // Example: Log to console or trigger modal, routing, etc.
-            console.log(`Clicked on ${name} with ${count} astronauts`);
-            alert(`You clicked on ${name} with ${count} astronauts!`);
+          layer.on('click', (e) => {
+            // Prevent event from bubbling to map
+            L.DomEvent.stopPropagation(e);
+
+            // Clear legend filter when selecting a specific country
+            this.legendFilterService.clearFilter();
+
+            // Highlight the selected country
+            this.highlightCountry(layer);
+
+            // Set the selected country for the chart
+            this.countrySelectionService.setSelectedCountry(name);
           });
         },
         style: (feature: any) => {
@@ -111,19 +119,84 @@ export class DenmarkMapComponent implements OnInit {
         }
       });
 
-      geoJsonLayer.addTo(this.map);
-      this.map.fitBounds(geoJsonLayer.getBounds());
+      this.geoJsonLayer = geoJsonLayer;
+      this.geoJsonLayer.addTo(this.map);
+      this.map.fitBounds(this.geoJsonLayer.getBounds());
+
+      // Add click handler to map to deselect when clicking on non-country areas
+      this.map.on('click', () => {
+        this.resetHighlight();
+        this.countrySelectionService.setSelectedCountry('');
+      });
     });
   }
 
   private getColor(count: number): string {
-    return count > 300 ? '#800026' :
-      count > 100 ? '#BD0026' :
-        count > 50 ? '#E31A1C' :
-          count > 20 ? '#FC4E2A' :
-            count > 10 ? '#FD8D3C' :
-              count > 0 ? '#FEB24C' :
-                '#blue';
+    return count > 300 ? '#440154' :  // Dark purple
+      count > 100 ? '#31688e' :       // Blue
+        count > 50 ? '#35b779' :      // Green
+          count > 20 ? '#6ece58' :    // Light green
+            count > 10 ? '#b5de2b' :  // Yellow-green
+              count > 0 ? '#fde725' : // Yellow
+                '#cccccc';            // Light gray
+  }
+
+  private highlightCountry(layer: L.Layer): void {
+    // Reset previous selection
+    this.resetHighlight();
+
+    // Set new selection
+    this.selectedLayer = layer;
+
+    // Apply highlight style
+    if (layer instanceof L.Path) {
+      layer.setStyle({
+        weight: 3,
+        color: '#ff6b35',
+        fillOpacity: 0.9
+      });
+      layer.bringToFront();
+    }
+  }
+
+  private resetHighlight(): void {
+    if (this.selectedLayer && this.selectedLayer instanceof L.Path) {
+      // Reset to original style
+      this.geoJsonLayer.resetStyle(this.selectedLayer);
+    }
+    this.selectedLayer = null;
+  }
+
+  private highlightCountriesByRange(range: string): void {
+    if (!this.geoJsonLayer) return;
+
+    this.geoJsonLayer.eachLayer((layer: L.Layer) => {
+      if (layer instanceof L.Path) {
+        const feature = (layer as any).feature;
+        const countryName = feature?.properties?.name ?? 'Unknown';
+        const count = this.astronautCounts[countryName] || 0;
+
+        if (range === '') {
+          // Clear all highlighting
+          this.geoJsonLayer.resetStyle(layer);
+        } else if (this.astronautDataService.isCountInRange(count, range)) {
+          // Highlight countries in the selected range
+          layer.setStyle({
+            weight: 3,
+            color: '#ff6b35',
+            fillOpacity: 0.9
+          });
+          layer.bringToFront();
+        } else {
+          // Dim countries not in range
+          layer.setStyle({
+            weight: 1,
+            color: 'white',
+            fillOpacity: 0.3
+          });
+        }
+      }
+    });
   }
 
 }

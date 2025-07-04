@@ -9,14 +9,17 @@
     <div class="main-content">
         <!-- Left Sidebar -->
         <div class="sidebar left-sidebar">
-            <h3>Statistics</h3>
-            <div class="stats-panel">
-                <p>Total Countries: 0</p>
-                <p>Total Astronauts: 0</p>
-                <p>Top Country: -</p>
+            <h3>Gender Distribution</h3>
+            <div>
+                <app-gender-distribution-chart></app-gender-distribution-chart>
             </div>
 
-            <h3>Filters</h3>
+            <h3>Mission Collaborations</h3>
+            <div>
+                <app-mission-collaboration-chart></app-mission-collaboration-chart>
+            </div>
+
+            <!-- <h3>Filters</h3>
             <div class="filters-panel">
                 <label>
                     <input type="checkbox" checked> Show all countries
@@ -25,51 +28,55 @@
                     <input type="checkbox" checked> Show astronaut counts
                 </label>
             </div>
+            <h3>Country Details</h3>
+            <div class="country-info">
+                <p>Click on a country to see details</p>
+                <div id="selected-country-info"></div>
+            </div> -->
         </div>
 
         <!-- Map Container -->
         <div class="map-container">
+            <!-- <div class="gender-filters">
+                <label>
+                    <input type="radio" name="gender" checked> Both male and females
+                </label>
+                <label>
+                    <input type="radio" name="gender" value="male"> Males
+                </label>
+                <label>
+                    <input type="radio" name="gender" value="female" checked> Females
+                </label>
+            </div> -->
+            <div class="legend-bar">
+                <div class="legend-bar-item" style="background-color: #440154; flex: 4;"
+                    (click)="onLegendClick('300+')">
+                    <span class="legend-text">300+</span>
+                </div>
+                <div class="legend-bar-item" style="background-color: #31688e; flex: 3;"
+                    (click)="onLegendClick('100-299')">
+                    <span class="legend-text">100-299</span>
+                </div>
+                <!-- <div class="legend-bar-item" style="background-color: #35b779; flex: 2;"
+                    (click)="onLegendClick('50-99')">
+                    <span class="legend-text">50-99</span>
+                </div>
+                <div class="legend-bar-item" style="background-color: #6ece58; flex: 2;"
+                    (click)="onLegendClick('20-49')">
+                    <span class="legend-text">20-49</span>
+                </div> -->
+                <div class="legend-bar-item" style="background-color: #b5de2b; flex: 1;"
+                    (click)="onLegendClick('10-19')">
+                    <span class="legend-text">10-19</span>
+                </div>
+                <div class="legend-bar-item" style="background-color: #fde725; flex: 1;" (click)="onLegendClick('1-9')">
+                    <span class="legend-text">1-9</span>
+                </div>
+                <div class="legend-bar-item" style="background-color: #cccccc; flex: 1;" (click)="onLegendClick('0')">
+                    <span class="legend-text">0</span>
+                </div>
+            </div>
             <app-denmark-map></app-denmark-map>
-        </div>
-
-        <!-- Right Sidebar -->
-        <div class="sidebar right-sidebar">
-            <h3>Country Details</h3>
-            <div class="country-info">
-                <p>Hover over a country to see details</p>
-            </div>
-
-            <h3>Legend</h3>
-            <div class="legend">
-                <div class="legend-item">
-                    <span class="color-box" style="background-color: #800026;"></span>
-                    <span>300+ astronauts</span>
-                </div>
-                <div class="legend-item">
-                    <span class="color-box" style="background-color: #BD0026;"></span>
-                    <span>100-299 astronauts</span>
-                </div>
-                <div class="legend-item">
-                    <span class="color-box" style="background-color: #E31A1C;"></span>
-                    <span>50-99 astronauts</span>
-                </div>
-                <div class="legend-item">
-                    <span class="color-box" style="background-color: #FC4E2A;"></span>
-                    <span>20-49 astronauts</span>
-                </div>
-                <div class="legend-item">
-                    <span class="color-box" style="background-color: #FD8D3C;"></span>
-                    <span>10-19 astronauts</span>
-                </div>
-                <div class="legend-item">
-                    <span class="color-box" style="background-color: #FEB24C;"></span>
-                    <span>1-9 astronauts</span>
-                </div>
-                <div class="legend-item">
-                    <span class="color-box" style="background-color: black;"></span>
-                    <span>0 astronauts</span>
-                </div>
-            </div>
         </div>
     </div>
 
